@@ -1,0 +1,21 @@
+# .gitignore
+
+# Dependencies
+node_modules/
+dist/
+build/
+.bun/
+
+# Environment variables (Never push these!)
+.env
+.env.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# OS junk
+.DS_Store
+Thumbs.db
