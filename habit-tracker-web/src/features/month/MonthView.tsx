@@ -1,7 +1,7 @@
 // src/features/month/MonthView.tsx
 import { useState, useEffect } from 'react';
 import { api } from '../habits/habitsApi';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from "../../context/AuthContext";
 
 interface Habit { id: string; name: string; category?: string; startDate: string; endDate?: string | null; }
 interface MonthlyStats { daysInMonth: number; logs: Array<{ habitId: string; date: string; completed: boolean; }>; }

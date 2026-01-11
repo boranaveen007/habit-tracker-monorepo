@@ -3,18 +3,16 @@ import { Elysia, t } from 'elysia';
 import { authController } from '../controllers/authController';
 import { authMiddleware } from '../middleware/auth';
 
-// CONSTANT for Dev/Bypass Mode
-const DEV_USER_ID = '00000000-0000-0000-0000-000000000001';
-
 export const authRoutes = new Elysia({ prefix: '/auth' })
   .use(authMiddleware)
+  
+  // PUBLIC: Register
   .post(
     '/register',
     async ({ body, jwt }) => {
       try {
         const user = await authController.register(body);
         const token = await jwt.sign({ userId: user.id, email: user.email });
-
         return { user, token };
       } catch (error: any) {
         throw new Error(error.message);
@@ -28,13 +26,14 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       }),
     }
   )
+  
+  // PUBLIC: Login
   .post(
     '/login',
     async ({ body, jwt }) => {
       try {
         const user = await authController.login(body);
         const token = await jwt.sign({ userId: user.id, email: user.email });
-
         return { user, token };
       } catch (error: any) {
         throw new Error(error.message);
@@ -47,27 +46,34 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
       }),
     }
   )
-  // GET Profile (Auth Bypass Enabled)
-  .get('/profile', async ({ user }) => {
+
+  // PROTECTED: Get Profile
+  .get('/profile', async ({ user, set }) => {
     try {
-      // Use logged in user OR fallback to Dev User
-      const userId = user ? user.id : DEV_USER_ID;
-      return await authController.getProfile(userId);
+      if (!user) {
+        set.status = 401;
+        throw new Error('Unauthorized');
+      }
+      return await authController.getProfile(user.id);
     } catch (error: any) {
+      if (!set.status) set.status = 500;
       throw new Error(error.message);
     }
-  }) 
-  // PATCH Profile (Auth Bypass Enabled)
-  .patch('/profile', async ({ user, body }) => {
+  })
+
+  // PROTECTED: Update Profile (Settings)
+  .patch('/profile', async ({ user, body, set }) => {
     try {
-      // Use logged in user OR fallback to Dev User
-      const userId = user ? user.id : DEV_USER_ID;
-      return await authController.updateProfile(userId, body);
+      if (!user) {
+        set.status = 401;
+        throw new Error('Unauthorized');
+      }
+      return await authController.updateProfile(user.id, body);
     } catch (error: any) {
+      if (!set.status) set.status = 500;
       throw new Error(error.message);
     }
   }, {
-    // isAuthenticated: true, // <--- DISABLED THIS CHECK
     body: t.Object({
       settings: t.Optional(t.Object({
         theme: t.Optional(t.String()),

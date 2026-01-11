@@ -1,11 +1,11 @@
 // src/features/analytics/AnalyticsView.tsx
 import { useState, useEffect, useMemo } from 'react';
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, 
+  PieChart, Pie, Cell, Legend, Tooltip as ChartTooltip 
 } from 'recharts';
 import { api } from '../habits/habitsApi';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from "../../context/AuthContext";
 
 const COLORS = ['#10b981', '#f1f5f9']; 
 
@@ -231,7 +231,7 @@ export default function AnalyticsView() {
                   <BarChart data={computed?.trendData || []}>
                     <XAxis dataKey="displayDate" axisLine={false} tickLine={false} fontSize={10} tick={{fill: '#94a3b8'}} tickMargin={10} minTickGap={30} />
                     <YAxis axisLine={false} tickLine={false} allowDecimals={false} fontSize={10} tick={{fill: '#94a3b8'}} />
-                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}} />
+                    <ChartTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} cursor={{fill: '#f8fafc'}} />
                     <Bar dataKey="count" fill="#10b981" radius={[4, 4, 4, 4]} barSize={range === '90' ? 6 : 16} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -247,7 +247,7 @@ export default function AnalyticsView() {
                       {pieData.map((entry, index) => ( <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
                     </Pie>
                     <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{fontSize: '12px', color: '#64748b'}} />
-                    <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                    <ChartTooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

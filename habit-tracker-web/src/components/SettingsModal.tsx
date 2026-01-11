@@ -1,6 +1,6 @@
 // src/components/SettingsModal.tsx
 import { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from "../context/AuthContext";
 import { api } from '../features/habits/habitsApi';
 
 interface Props { onClose: () => void; }

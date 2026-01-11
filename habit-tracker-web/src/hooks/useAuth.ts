@@ -1,70 +1,56 @@
 // src/hooks/useAuth.ts
-import { useEffect } from 'react';
-import { create } from 'zustand';
-import { api, setAuthToken } from '../features/habits/habitsApi';
+import { useState, useEffect } from 'react';
+import { api } from '../features/habits/habitsApi';
 
-type User = { id: string; email: string; name: string };
-
-type AuthState = {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  hydrate: () => void;
-};
-
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  loading: false,
-  async login(email, password) {
-    set({ loading: true });
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      console.log('AUTH RESPONSE LOGIN', res.data);
-      const { user, token } = res.data;
-      localStorage.setItem('token', token);
-      setAuthToken(token);
-      set({ user, token, loading: false });
-    } catch (e) {
-      set({ loading: false });
-      throw e;
-    }
-  },
-  async register(name, email, password) {
-    set({ loading: true });
-    try {
-      const res = await api.post('/auth/register', { name, email, password });
-      console.log('AUTH RESPONSE REGISTER', res.data);
-      const { user, token } = res.data;
-      localStorage.setItem('token', token);
-      setAuthToken(token);
-      set({ user, token, loading: false });
-    } catch (e) {
-      set({ loading: false });
-      throw e;
-    }
-  },
-  logout() {
-    localStorage.removeItem('token');
-    setAuthToken(null);
-    set({ user: null, token: null });
-  },
-  hydrate() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setAuthToken(token);
-      set({ token });
-    }
-  },
-}));
+interface User {
+  id: string;
+  email: string;
+  name: string;
+}
 
 export function useAuth() {
-  const store = useAuthStore();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // 1. Check for existing session on load
   useEffect(() => {
-    store.hydrate();
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
-  return store;
+
+  // 2. Login function
+  const login = (userData: User, token: string) => {
+    // Save to storage (Axios interceptor will read this automatically)
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
+    
+    // Update State
+    setUser(userData);
+  };
+
+  // 3. Logout function
+  const logout = () => {
+    // Clear storage
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    
+    // Reset State
+    setUser(null);
+    
+    // Optional: Redirect to login or home
+    window.location.href = '/login';
+  };
+
+  return {
+    user,
+    loading,
+    login,
+    logout,
+    isAuthenticated: !!user,
+  };
 }

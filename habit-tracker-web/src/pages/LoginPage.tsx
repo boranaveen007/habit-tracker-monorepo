@@ -1,11 +1,16 @@
-// src/pages/LoginPage.tsx
 import { useState } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { api } from "../features/habits/habitsApi";
+import Logo from "../components/Logo";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState(""); // Added name for Registration
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,11 +19,31 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      // For MVP, register/login logic is handled by useAuth or skipped if using Dev User bypass
-      await login(email, password, isLogin);
+      // 1. Determine endpoint based on mode
+      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+
+      // 2. Prepare payload
+      const payload = isLogin
+        ? { email, password }
+        : { email, password, name: name || "New User" }; // Name required for register
+
+      // 3. Call API
+      const response = await api.post(endpoint, payload);
+
+      // 4. Update Auth State
+      const { user, token } = response.data;
+      login(user, token);
+
+      // 5. Redirect
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Authentication failed");
+      console.error("Auth error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Authentication failed. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
@@ -26,13 +51,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 font-sans">
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
+      <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg shadow-slate-200/50 p-8 border border-slate-100">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-xl font-bold mb-4 shadow-lg shadow-emerald-200">
-            H
+          <div className="mb-4 shadow-lg shadow-emerald-200/50 rounded-full">
+            <Logo size="lg" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Welcome Back</h1>
-          <p className="text-slate-400 text-sm mt-1">Track your habits, build your future.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Habit Tick
+          </h1>
+          <p className="text-slate-500 text-sm mt-2 font-medium">
+            Build better habits, one tick at a time
+          </p>
         </div>
 
         {error && (
@@ -42,8 +71,27 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Show Name field only if Registering */}
+          {!isLogin && (
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+                Name
+              </label>
+              <input
+                type="text"
+                required={!isLogin}
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-emerald-500/20 text-slate-800 font-medium placeholder:text-slate-400 transition-all"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Email</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+              Email
+            </label>
             <input
               type="email"
               required
@@ -53,8 +101,11 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">Password</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
+              Password
+            </label>
             <input
               type="password"
               required
@@ -70,16 +121,25 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-3.5 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-200 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-4"
           >
-            {loading ? "Please wait..." : (isLogin ? "Sign In" : "Create Account")}
+            {loading
+              ? "Please wait..."
+              : isLogin
+              ? "Sign In"
+              : "Create Account"}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError(""); // Clear error when switching modes
+            }}
             className="text-sm font-semibold text-slate-400 hover:text-slate-600 transition-colors"
           >
-            {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            {isLogin
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Sign in"}
           </button>
         </div>
       </div>
