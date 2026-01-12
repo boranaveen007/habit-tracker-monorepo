@@ -102,7 +102,7 @@ export default function WeekView() {
                       <td key={day.date} className="p-2 text-center">
                         <button
                           onClick={() => !disabled && handleToggle(habit, day.date)}
-                          disabled={disabled}
+                          disabled={!!disabled}
                           className={`
                             w-7 h-7 rounded-lg mx-auto flex items-center justify-center transition-all duration-300 ease-out
                             ${disabled 

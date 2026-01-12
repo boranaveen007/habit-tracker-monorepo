@@ -1,6 +1,5 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from '../features/habits/habitsApi';
 
 // 1. Define the User Shape (Fixing the 'settings' error here)
 export interface User {

@@ -1,6 +1,4 @@
 // src/components/Logo.tsx
-import React from 'react';
-
 interface LogoProps {
   className?: string; // To add extra margin or sizing classes if needed
   size?: 'sm' | 'md' | 'lg' | 'xl';

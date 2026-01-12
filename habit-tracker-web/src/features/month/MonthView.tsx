@@ -95,7 +95,7 @@ export default function MonthView() {
                       <td key={day} className="p-1 text-center">
                         <button
                           onClick={() => !isDisabled && toggleHabit(habit.id, day)}
-                          disabled={isDisabled}
+                          disabled={!!isDisabled}
                           className={`
                             w-6 h-6 rounded-md transition-all duration-200 ease-out flex items-center justify-center mx-auto
                             ${isDisabled 

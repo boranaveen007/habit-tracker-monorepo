@@ -1,0 +1,29 @@
+# docker-compose.yml
+services:
+  # ---------------------------------------------------------
+  # REMOVED 'db' SERVICE entirely (You use Supabase!)
+  # ---------------------------------------------------------
+
+  # 1. Backend API
+  backend:
+    build: ./habit-tracker-api
+    ports:
+      - "3000:3000"
+    environment:
+      # Keep your Supabase URL here
+      - DATABASE_URL=postgresql://postgres.vchqozgeqyuefnkomjew:Nighting%40le7Nighting%40le@aws-0-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true
+      - JWT_SECRET=change_this_in_prod
+      - FRONTEND_URL=http://localhost:8080
+    volumes:
+      # Keep your existing sync (Example: syncing api folder to /app)
+      - ./habit-tracker-api:/app
+      
+      # ADD THIS LINE BELOW (This is the "Anonymous Volume" hack):
+      - /app/node_modules
+  # 2. Frontend UI
+  frontend:
+    build: ./habit-tracker-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

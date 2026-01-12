@@ -14,7 +14,6 @@
     "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.45.1",
     "elysia": "^1.4.21",
-    "node": "^24.12.0",
     "postgres": "^3.4.7"
   },
   "name": "habit-tracker-api",

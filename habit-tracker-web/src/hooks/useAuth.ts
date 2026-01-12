@@ -1,6 +1,5 @@
 // src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
-import { api } from '../features/habits/habitsApi';
 
 interface User {
   id: string;
