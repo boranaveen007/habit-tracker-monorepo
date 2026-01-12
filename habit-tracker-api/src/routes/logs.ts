@@ -1,18 +1,20 @@
 // src/routes/logs.ts
 import { Elysia, t } from 'elysia';
 import { logController } from '../controllers/logController';
-
-// Using the same DEV_USER_ID you set up before
-const DEV_USER_ID = '00000000-0000-0000-0000-000000000001'; 
+import { authMiddleware } from '../middleware/auth';
 
 export const logRoutes = new Elysia({ prefix: '/logs' })
-  // .use(authMiddleware) // DISABLED FOR NOW
+  .use(authMiddleware) // ENABLED: This injects 'user' into context
 
-  .post('/toggle', async ({ body }) => {
-    // Hardcode user ID for now
-    return await logController.toggleHabitLog(DEV_USER_ID, body);
+  // POST /logs/toggle
+  .post('/toggle', async ({ user, body, set }) => {
+    if (!user) {
+      set.status = 401;
+      throw new Error('Unauthorized');
+    }
+    // Pass real user.id instead of DEV_USER_ID
+    return await logController.toggleHabitLog(user.id, body);
   }, {
-    // isAuthenticated: true, // DISABLED
     body: t.Object({
       habitId: t.String(),
       date: t.String(),
@@ -20,31 +22,40 @@ export const logRoutes = new Elysia({ prefix: '/logs' })
     }),
   })
 
-  .get('/range', async ({ query }) => {
+  // GET /logs/range
+  .get('/range', async ({ user, query, set }) => {
+    if (!user) {
+      set.status = 401;
+      throw new Error('Unauthorized');
+    }
     return await logController.getLogsForDateRange(
-      DEV_USER_ID,
+      user.id,
       query.startDate,
       query.endDate
     );
   }, {
-    // isAuthenticated: true, // DISABLED
     query: t.Object({
       startDate: t.String(),
       endDate: t.String()
     })
   })
 
-  .get('/monthly', async ({ query }) => {
+  // GET /logs/monthly
+  .get('/monthly', async ({ user, query, set }) => {
+    if (!user) {
+      set.status = 401;
+      throw new Error('Unauthorized');
+    }
     const year = parseInt(query.year);
     const month = parseInt(query.month);
     
     if (isNaN(year) || isNaN(month)) {
+      set.status = 400;
       throw new Error('Invalid year or month');
     }
     
-    return await logController.getMonthlyStats(DEV_USER_ID, year, month);
+    return await logController.getMonthlyStats(user.id, year, month);
   }, {
-    // isAuthenticated: true, // DISABLED
     query: t.Object({
       year: t.String(),
       month: t.String()
